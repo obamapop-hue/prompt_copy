@@ -11,7 +11,7 @@ Render의 웹 서버 하나와 1GB 영구 저장 공간을 사용하도록 `rend
 ## 발주자가 해야 하는 일
 
 1. 휴대폰 브라우저에서 Render 계정을 만들고 GitHub 저장소 접근을 연결합니다.
-2. Blueprint로 이 저장소의 `render.yaml`을 선택합니다. 서버 생성·결제 확정 전에 표시되는 월 요금을 확인합니다.
+2. Blueprint로 `obamapop-hue/prompt_copy` 저장소의 `youngcha-deploy` 브랜치와 `render.yaml`을 선택합니다. 기본 `main` 브랜치에는 이 변경이 아직 반영되지 않았습니다. 서버 생성·결제 확정 전에 표시되는 월 요금을 확인합니다.
 3. 비용 승인 후 서버를 만듭니다. 성공하면 Render가 HTTPS 주소를 발급합니다. 별도 도메인 구매는 첫 공개에 필요하지 않습니다.
 4. 그 주소를 카카오 Developers의 사이트 주소로 사용합니다. 로그인 callback은 `https://발급주소/accounts/kakao/login/callback/`입니다.
 5. 카카오 설정값은 호스팅 보안 설정에 입력합니다. 비밀키나 비밀번호를 채팅에 보내지 않습니다.
