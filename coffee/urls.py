@@ -1,0 +1,31 @@
+from django.urls import path, include
+from orders import views as v
+
+urlpatterns = [
+    path("healthz", v.health),
+    path("", lambda r: v.page(r, "home")),
+    path("login", lambda r: v.page(r, "login")),
+    path("cafes", lambda r: v.page(r, "cafes")),
+    path("cafes/<int:cid>", lambda r, cid: v.page(r, "cafes", oid=cid)),
+    path("my/orders", lambda r: v.page(r, "orders")),
+    path("my/orders/<uuid:oid>", lambda r, oid: v.page(r, "detail", oid=oid)),
+    path("join/<str:token>", lambda r, token: v.page(r, "join", token=token)),
+    path("seller/login", lambda r: v.role_login(r, "seller")),
+    path("admin/login", lambda r: v.role_login(r, "admin")),
+    path("seller/orders", lambda r: v.page(r, "seller")),
+    path("seller/orders/<uuid:oid>", lambda r, oid: v.page(r, "seller", oid=oid)),
+    path("admin", lambda r: v.page(r, "admin")),
+    path("admin/orders", lambda r: v.page(r, "admin-orders")),
+    path("admin/orders/<uuid:oid>", lambda r, oid: v.page(r, "admin-orders", oid=oid)),
+    path("logout", v.signout),
+    path("accounts/", include("allauth.urls")),
+    path("api/me", v.me),
+    path("api/nickname", v.nickname),
+    path("api/cafes", v.cafes),
+    path("api/cafes/<int:cid>", v.cafes),
+    path("api/orders", v.orders),
+    path("api/orders/<uuid:oid>", v.order),
+    path("api/join/<str:token>", v.join),
+    path("api/receipts/<str:token>", v.receipt),
+    path("api/admin", v.administration),
+]

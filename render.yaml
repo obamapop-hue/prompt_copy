@@ -1,0 +1,25 @@
+# One paid web service. The same container runs HTTP and the expiry worker.
+# Do not use a sleeping free instance or multiple replicas with this SQLite DB.
+services:
+  - type: web
+    name: youngcha
+    runtime: docker
+    plan: starter
+    numInstances: 1
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /healthz
+    disk:
+      name: youngcha-orders
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DATABASE_PATH
+        value: /var/data/coffee.sqlite3
+      - key: TRUST_HTTPS_PROXY
+        value: "1"
+      - key: DEMO_MODE
+        value: "0"
+      - key: POLICIES_APPROVED
+        value: "0"

@@ -1,0 +1,703 @@
+{% extends 'orders/base.html' %}
+{% block content %}
+<main class="container {% if mode == 'home' or mode == 'login' %}home-page{% endif %}" id="app" data-mode="{{mode}}" data-oid="{{oid}}" data-token="{{token}}" data-return-to="{{return_to}}">
+{% if mode == 'home' or mode == 'login' %}
+<div class="home-content">
+<h1 class="home-title">먹고 싶은거 다 골라!</h1>
+<div class="home-actions"><a class="button home-order" href="/cafes">주문하기</a></div>
+</div>
+{% elif mode == 'cafes' %}<h1>카페 선택</h1>
+{% elif mode == 'join' %}<h1>메뉴 선택</h1>
+{% elif mode == 'seller' %}<h1>주문 관리</h1><div class="flex"><button id="sound">알림 소리 켜기 · 시험 재생</button><span class="muted" id="sound-status">소리 꺼짐</span></div><div id="pending-alert"></div>
+{% elif mode == 'admin' %}<h1>매장·메뉴 관리</h1><a class="button secondary" href="/admin/orders">전체 주문 기록</a>
+{% else %}<h1>{% if mode == 'detail' %}주문 상세{% elif mode == 'admin-orders' %}전체 주문 기록{% else %}내 주문 목록{% endif %}</h1>{% endif %}
+<div id="connection" class="connection" role="status"></div><div id="error" class="alert hidden" role="alert"></div><div id="content"></div><div id="cart"></div><div id="pager"></div></main><dialog id="modal"></dialog><div id="toast" class="toast hidden" role="status"></div>{% endblock %}
+{% block scripts %}<script>
+const root = document.querySelector("#app"),
+  mode = root.dataset.mode,
+  joinToken = root.dataset.token;
+let oid = root.dataset.oid;
+const $ = (s) => document.querySelector(s),
+  esc = (v) =>
+    String(v ?? "").replace(
+      /[&<>"']/g,
+      (c) =>
+        ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;",
+        })[c],
+    ),
+  money = (v) => Number(v).toLocaleString("ko-KR") + "원";
+const labels = {
+  COLLECTING: "모집 중",
+  CLOSED: "마감",
+  PENDING: "접수 대기",
+  ACCEPTED: "준비 중",
+  READY: "준비 완료",
+  CANCELLED: "총무 취소",
+  REJECTED: "판매자 거절",
+  AUTO_CANCELLED: "5분 미접수 자동 취소",
+  SELLER_DELETED: "판매자 삭제로 취소",
+};
+const eventLabels = {
+  create: "주문방 생성",
+  submit: "참여 제출",
+  close: "모집 마감",
+  send: "주문서 전송",
+  accept: "판매자 수락",
+  reject: "판매자 거절",
+  ready: "준비 완료",
+  cancel: "총무 취소",
+  auto_cancel: "자동 취소",
+  item_change: "총무 수량 변경",
+  seller_deleted: "판매자 삭제로 취소",
+};
+let user = {},
+  cafeData = [],
+  cart = [],
+  current = {},
+  orderList = [],
+  page = 1,
+  filter = {},
+  busy = false,
+  audio = null,
+  sound = false,
+  pending = [],
+  lastState = {},
+  timer;
+function notify(t) {
+  $("#toast").textContent = t;
+  $("#toast").classList.remove("hidden");
+  setTimeout(() => $("#toast").classList.add("hidden"), 4500);
+}
+function failure(e) {
+  $("#error").textContent = e.message;
+  $("#error").classList.remove("hidden");
+}
+function when(v) {
+  return v
+    ? new Intl.DateTimeFormat("ko-KR", {
+        timeZone: "Asia/Seoul",
+        month: "numeric",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: false,
+      }).format(new Date(v))
+    : "";
+}
+function optionsText(opts) {
+  return opts.map((x) => x.name).join(" · ") || "기본";
+}
+function csrf() {
+  return (
+    document.cookie
+      .split("; ")
+      .find((x) => x.startsWith("csrftoken="))
+      ?.split("=")[1] ||
+    document.querySelector("[name=csrfmiddlewaretoken]")?.value ||
+    ""
+  );
+}
+async function api(url, data, key) {
+  const res = await fetch(url, {
+    method: data ? "POST" : "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": csrf(),
+      ...(data ? { "Idempotency-Key": key || crypto.randomUUID() } : {}),
+    },
+    body: data ? JSON.stringify(data) : undefined,
+    cache: "no-store",
+  });
+  let json;
+  try {
+    json = await res.json();
+  } catch {
+    throw Error("서버 응답을 확인할 수 없습니다. 다시 연결해 주세요.");
+  }
+  if (!res.ok) {
+    const e = Error(json.error || "처리 실패");
+    e.status = res.status;
+    throw e;
+  }
+  return json;
+}
+// Persist only retry identity and request payload in sessionStorage; DB is the order source.
+async function mutate(url, data) {
+  if (busy) return;
+  busy = true;
+  document.querySelectorAll("button").forEach((b) => (b.disabled = true));
+  const slot = "retry:" + url,
+    sensitive = Object.hasOwn(data, "password");
+  let old = sensitive
+    ? null
+    : JSON.parse(sessionStorage.getItem(slot) || "null");
+  const payload = JSON.stringify(data);
+  if (old && old.payload !== payload) {
+    busy = false;
+    document.querySelectorAll("button").forEach((b) => (b.disabled = false));
+    throw Error(
+      "미확인 요청이 있습니다. 이전 요청을 재시도하거나 최신 내역을 확인해 주세요.",
+    );
+  }
+  const id = old?.key || crypto.randomUUID();
+  if (!sensitive)
+    sessionStorage.setItem(slot, JSON.stringify({ key: id, payload }));
+  try {
+    const result = await api(url, data, id);
+    sessionStorage.removeItem(slot);
+    return result;
+  } catch (e) {
+    if (e.status && e.status < 500) sessionStorage.removeItem(slot);
+    throw e;
+  } finally {
+    busy = false;
+    document.querySelectorAll("button").forEach((b) => (b.disabled = false));
+  }
+}
+function connect(ok) {
+  $("#connection").textContent = ok
+    ? "● 연결됨 · 서버 상태 자동 갱신"
+    : "연결 끊김 · 최신 상태를 확인하지 못했습니다.";
+  $("#connection").style.color = ok ? "#888888" : "#a05030";
+  if (!ok && !$("#retry")) {
+    const b = document.createElement("button");
+    b.id = "retry";
+    b.textContent = "다시 연결";
+    b.onclick = () => refresh(true);
+    $("#connection").append(b);
+  }
+  if (ok) $("#retry")?.remove();
+}
+function card(c) {
+  return `<article class="card"><div class="cafe-picture">☕</div><div class="card-body"><span class="badge">${c.demo ? "시연용 카페" : "제휴 카페"}</span><h3>${esc(c.name)}</h3><p class="muted">${esc(c.description)}</p><p class="muted" style="font-size:12px">⌖ ${esc(c.location)}</p><button data-cafe="${c.id}" class="secondary" style="width:100%">메뉴 보기 · 카페 선택 →</button></div></article>`;
+}
+function menuCards(menus, join = false) {
+  return `<div class="grid">${menus.map((m) => `<article class="card menu-card"><div class="menu-icon">${m.name.includes("에이드") ? "🍋" : "☕"}</div><h3>${esc(m.name)}</h3><p class="muted" style="font-size:13px">${esc(m.description)}</p><strong>${money(m.price)}</strong>${join ? `<div class="options">${m.options.map((o) => `<label><input type="${o.group ? "radio" : "checkbox"}" name="opt-${m.id}-${esc(o.group || o.id)}" value="${esc(o.id)}" data-opt="${m.id}"> ${esc(o.name)}${o.price ? " +" + money(o.price) : ""}</label>`).join("")}</div><div class="flex between"><input type="number" min="1" max="99" value="1" id="q-${m.id}" aria-label="${esc(m.name)} 수량" style="width:75px"><button data-add="${m.id}">담기 +</button></div>` : `<p class="muted" style="font-size:12px">${esc(optionsText(m.options))}</p>`}</article>`).join("")}</div>`;
+}
+function cafeModal(id) {
+  const c = cafeData.find((x) => x.id === Number(id));
+  $("#modal").innerHTML =
+    `<button class="secondary" style="float:right" onclick="document.querySelector('#modal').close()">닫기</button><h2>${esc(c.name)}</h2><p class="muted">${esc(c.description)}</p>${c.menus.map((m) => `<div class="row"><div><strong>${esc(m.name)}</strong><p class="muted">${esc(m.description)}</p></div><span>${money(m.price)}</span></div>`).join("")}<button data-create="${c.id}" style="width:100%;margin-top:20px">이 카페로 주문방 만들기</button>`;
+  $("#modal").showModal();
+}
+function drawCart() {
+  const total = cart.reduce((a, x) => a + x.unit_price * x.quantity, 0);
+  $("#cart").innerHTML = cart.length
+    ? `<section class="panel"><h2>담은 음료</h2>${cart.map((x, i) => `<div class="row"><div><strong>${esc(x.name)}</strong><p class="muted">${esc(optionsText(x.selected))}</p></div><div class="flex"><input type="number" min="1" max="99" value="${x.quantity}" data-cart-q="${i}" aria-label="담은 음료 수량"><strong>${money(x.unit_price * x.quantity)}</strong><button class="danger" data-remove="${i}">빼기</button></div></div>`).join("")}<div class="summary"><span>총 ${cart.reduce((a, x) => a + x.quantity, 0)}잔</span><strong>${money(total)}</strong></div><label for="participant-name">총무가 알아볼 수 있는 이름</label><input id="participant-name" maxlength="60" placeholder="이름을 입력해 주세요" value="${esc(sessionStorage.getItem("participant-name") || "")}"><button id="submit" style="margin-left:10px">선택 내역 제출</button><p class="muted" style="font-size:12px">제출 후에는 직접 수정할 수 없어요. 변경이 필요하면 총무에게 알려주세요.</p></section>`
+    : "";
+}
+function drawReceipt(r) {
+  $("#content").innerHTML =
+    `<div class="panel empty"><span class="badge">제출 완료</span><h2>${esc(r.name)}님, 잘 담아뒀어요!</h2><p class="muted">주문번호 ${esc(r.number)}<br>총무가 주문을 모아 카페에 전송할 거예요.</p>${r.items.map((x) => `<div class="row"><span>${esc(x.menu)} · ${esc(optionsText(x.options))} × ${x.quantity}</span><strong>${money(x.amount)}</strong></div>`).join("")}<p class="notice">표시된 내역은 최초 제출 결과입니다. 총무가 수량을 조절하거나 삭제할 수 있습니다.</p></div>`;
+  $("#cart").innerHTML = "";
+}
+function renderDetail(o, readonly = false) {
+  const st = o.status,
+    summary = o.summary;
+  let buttons = "";
+  if (!readonly && user.role === "organizer") {
+    if (st === "COLLECTING")
+      buttons = '<button data-action="close">모집 마감하기</button>';
+    if (st === "CLOSED")
+      buttons = '<button data-action="send">최종 주문서 전송</button>';
+    if (st === "PENDING")
+      buttons =
+        '<button class="danger" data-action="cancel">전체 주문 취소</button>';
+  }
+  if (!readonly && user.role === "seller") {
+    if (st === "PENDING")
+      buttons =
+        '<input id="minutes" type="number" min="1" max="180" placeholder="준비 시간(분)"><button data-action="accept">수락</button><input id="reason" placeholder="거절 사유 10~50자" maxlength="100"><button class="danger" data-action="reject">거절</button>';
+    if (st === "ACCEPTED")
+      buttons = '<button data-action="ready">준비 완료</button>';
+  }
+  return `<section class="panel">${user.role === "seller" ? '<button id="back-to-orders" class="secondary">← 주문 목록</button>' : ""}<div class="flex between"><div><span class="muted" style="font-size:12px">${esc(o.number)} · ${esc(o.nickname)}</span><h2>${esc(o.cafe.name)}</h2></div><span class="badge ${st === "PENDING" ? "warn" : ""}">${labels[st]}</span></div>${o.join_url && ["COLLECTING", "CLOSED"].includes(st) ? `<div class="notice">생성 시점 메뉴·가격을 유지합니다.</div><div class="toolbar"><input readonly value="${esc(location.origin + o.join_url)}" style="max-width:100%;flex:1"><button data-copy="${esc(o.join_url)}">참여 링크 복사</button><a class="button secondary" href="${esc(o.join_url)}">내 음료 담기</a></div>` : ""}${o.expected_at ? `<div class="notice">${when(o.expected_at)} 완성 예정</div>` : ""}${st === "PENDING" ? `<p class="muted">접수 기한: ${when(o.deadline)} · 전송 후 5분 미접수 시 자동 취소</p>` : ""}${st === "READY" ? '<div class="notice">☕ 준비가 완료되었어요. 매장에서 수령하고 결제해 주세요.</div>' : ""}${summary.items.map((i) => `<div class="row"><div><strong>${esc(i.name)} · ${esc(i.menu)}</strong><p class="muted" style="font-size:12px">${esc(optionsText(i.options))} · 최초 ${i.original_quantity}잔${i.deleted ? " · 삭제됨" : ""}</p></div><div class="flex"><span>${i.quantity}잔 · ${money(i.amount)}</span>${!readonly && user.role === "organizer" && ["COLLECTING", "CLOSED"].includes(st) && !i.deleted ? `<input id="edit-${i.id}" type="number" min="0" max="99" value="${i.quantity}" aria-label="수량"><button class="secondary" data-edit="${i.id}">적용</button><button class="danger" data-delete="${i.id}">삭제</button>` : ""}</div></div>`).join("") || '<p class="muted empty">아직 담긴 음료가 없어요. 참여 링크를 공유해 보세요.</p>'}<div class="summary"><span>총 <strong>${summary.count}</strong> 잔</span><div style="margin-left:auto"><span class="muted">총 주문 금액 &nbsp;</span><strong>${money(summary.total)}</strong></div></div><details><summary>메뉴·옵션별 합계</summary>${summary.groups.map((g) => `<div class="row"><span>${esc(g.menu)} · ${esc(optionsText(g.options))}</span><span>${g.quantity}잔 · ${money(g.amount)}</span></div>`).join("")}</details><div class="toolbar">${buttons}</div><details><summary>주문 처리·변경 이력 (${o.events.length})</summary><div class="timeline">${o.events.map((e) => `<div>${eventLabels[e.kind] || esc(e.kind)} · ${when(e.occurred_at)} · 처리자 ${esc(e.actor)}${e.details.reason ? "<p>" + esc(e.details.reason) + "</p>" : ""}${e.kind === "item_change" ? `<p>항목 ${e.details.item}: ${e.details.before} → ${e.details.after}잔</p>` : ""}</div>`).join("")}</div></details></section>`;
+}
+function toolbar() {
+  return `<div class="toolbar"><input type="date" id="from" aria-label="시작일" value="${esc(filter.from || "")}"><input type="date" id="to" aria-label="종료일" value="${esc(filter.to || "")}"><input id="number" placeholder="주문번호" value="${esc(filter.number || "")}"><select id="status"><option value="">모든 상태</option>${Object.keys(
+    labels,
+  )
+    .map(
+      (k) =>
+        `<option value="${k}" ${filter.status === k ? "selected" : ""}>${labels[k]}</option>`,
+    )
+    .join(
+      "",
+    )}</select>${mode === "admin-orders" ? `<input id="cafe-filter" type="number" min="1" placeholder="매장 ID" value="${esc(filter.cafe || "")}">` : ""}<button id="filter" class="secondary">조회</button></div>`;
+}
+async function loadOrders(force = false) {
+  const params = new URLSearchParams({ ...filter, page }),
+    d = await api("/api/orders?" + params);
+  orderList = d.orders;
+  const stamp = JSON.stringify(d);
+  if (force || current.listStamp !== stamp) {
+    current.listStamp = stamp;
+    if (oid) {
+      const detail = await api("/api/orders/" + oid);
+      current.order = detail.order;
+      $("#content").innerHTML = renderDetail(
+        detail.order,
+        mode === "admin-orders",
+      );
+    } else
+      $("#content").innerHTML =
+        toolbar() +
+        (d.orders.length
+          ? d.orders
+              .map(
+                (o) =>
+                  `<a href="${user.role === "organizer" ? "/my/orders/" : user.role === "seller" ? "/seller/orders/" : "/admin/orders/"}${o.id}"><article class="panel"><div class="flex between"><div><span class="muted">${o.number} · ${when(o.created_at)}</span><h3>${esc(o.cafe.name)} · ${esc(o.nickname)}</h3><span>${o.summary.count}잔 · ${money(o.summary.total)}</span></div><span class="badge">${labels[o.status]} →</span></div></article></a>`,
+              )
+              .join("")
+          : '<div class="panel empty"><h3>아직 주문이 없어요.</h3><p class="muted">새 주문을 만들거나 다른 조회 조건을 선택해 주세요.</p><a class="button secondary" href="/cafes">카페 둘러보기</a></div>');
+    $("#pager").innerHTML = !oid
+      ? `<div class="flex"><button data-page="${page - 1}" ${page === 1 ? "disabled" : ""} class="secondary">이전</button><span>${page}페이지</span><button data-page="${page + 1}" ${!d.has_next ? "disabled" : ""} class="secondary">다음</button></div>`
+      : "";
+  }
+  if (mode === "seller") {
+    // Alerts are independent of historical filters and pagination.
+    const waiting = await api("/api/orders?status=PENDING&page=1");
+    pending = waiting.orders;
+    $("#pending-alert").innerHTML = pending.length
+      ? `<div class="panel seller-popup"><h3>🔔 접수 대기 주문 ${waiting.total}건</h3><p>새 주문이 기다리고 있어요. 수락하거나 거절해 주세요.</p>${pending.map((o) => `<a class="button secondary" href="/seller/orders/${o.id}" style="margin:5px">${esc(o.number)} · ${esc(o.nickname)}</a>`).join("")}</div>`
+      : "";
+  }
+  for (const o of d.orders) {
+    if (o.status === "READY" && lastState[o.id] && lastState[o.id] !== "READY")
+      notify(o.number + " 준비 완료!");
+    lastState[o.id] = o.status;
+  }
+}
+async function renderAdmin() {
+  const d = await api("/api/admin");
+  current.admin = d;
+  $("#content").innerHTML =
+    `<div class="panel"><h2>매장 등록</h2><form id="cafe-form"><div class="toolbar"><input name="name" placeholder="매장 이름" required maxlength="80"><input name="location" placeholder="위치" required maxlength="200"><input name="description" placeholder="소개"><button>매장 등록</button></div></form></div>${d.cafes
+      .map(
+        (c) =>
+          `<section class="panel"><div class="flex between"><h2>${esc(c.name)} <small class="muted">#${c.id}</small></h2><span class="badge">${c.active ? "운영 중" : "접근 해제"}</span></div><form class="cafe-edit" data-id="${c.id}"><div class="toolbar"><input name="name" value="${esc(c.name)}" required><input name="location" value="${esc(c.location)}" required><input name="description" value="${esc(c.description)}"><button class="secondary">매장 정보 저장</button></div></form><details><summary>메뉴판 관리</summary>${c.menus.map((m) => menuForm(c.id, m)).join("")}${menuForm(c.id)}</details><details><summary>판매자 계정 발급·접근 해제</summary>${d.sellers
+            .filter((s) => s.cafe === c.id)
+            .map(
+              (s) =>
+                `<div class="row"><span>${esc(s.username)} · ${s.active ? "활성" : "삭제됨"}</span>${s.active ? `<button class="danger" data-seller-delete="${s.id}">판매자 삭제</button>` : ""}</div>`,
+            )
+            .join(
+              "",
+            )}${c.active ? `<form class="seller-form" data-cafe="${c.id}"><label>발급할 계정명</label><input name="username" required autocomplete="off"><label>초기 비밀번호</label><input name="password" type="password" required autocomplete="new-password"><button style="margin-left:10px">계정 발급</button></form>` : ""}</details></section>`,
+      )
+      .join("")}`;
+}
+function menuForm(cafe, m) {
+  return `<form class="menu-form" data-cafe="${cafe}" data-id="${m?.id || ""}"><div class="row"><div style="width:100%"><h3>${m ? "메뉴 수정" : "새 메뉴"}</h3><div class="toolbar"><input name="name" placeholder="메뉴명" value="${esc(m?.name || "")}" required><input name="description" placeholder="설명" value="${esc(m?.description || "")}"><input name="price" type="number" min="0" max="1000000" placeholder="기본 가격" value="${m?.price ?? ""}" required><label style="margin:0"><input name="active" type="checkbox" ${m?.active === false ? "" : "checked"}> 표시</label></div><label>옵션 · 한 줄에 ID | 이름 | 추가금액 | 선택 그룹(선택)</label><textarea name="options" rows="4" style="width:100%" placeholder="ice | ICE | 0 | 온도&#10;hot | HOT | 0 | 온도&#10;shot | 샷 추가 | 500">${esc((m?.options || []).map((o) => [o.id, o.name, o.price, o.group || ""].join(" | ")).join("\n"))}</textarea><p class="muted" style="font-size:12px">같은 그룹에서는 한 가지만 필수 선택합니다. 그룹이 없으면 선택 추가 옵션입니다.</p><button class="secondary">메뉴 저장</button></div></div></form>`;
+}
+async function refresh(force = false) {
+  if (busy) return;
+  try {
+    if (mode === "detail") {
+      const d = await api("/api/orders/" + oid);
+      const stamp = JSON.stringify(d);
+      if (force || stamp !== current.stamp) {
+        current.stamp = stamp;
+        current.order = d.order;
+        $("#content").innerHTML = renderDetail(d.order);
+        if (
+          current.prev &&
+          current.prev !== "READY" &&
+          d.order.status === "READY"
+        )
+          notify("음료 준비 완료! 매장에서 수령해 주세요.");
+        current.prev = d.order.status;
+      }
+    } else if (["orders", "seller", "admin-orders"].includes(mode))
+      await loadOrders(force);
+    else if (mode === "join" && !current.receipt) {
+      const d = await api("/api/join/" + joinToken);
+      current.join = d;
+      if (d.status !== "COLLECTING") {
+        $("#content").innerHTML =
+          '<div class="panel empty"><h2>모집이 마감되었어요.</h2><p class="muted">이 링크에서는 더 이상 제출할 수 없습니다.</p></div>';
+        $("#cart").innerHTML = "";
+      }
+    }
+    connect(true);
+  } catch (e) {
+    connect(false);
+    if (force) failure(e);
+  }
+}
+function renderAccount() {
+  const nav=$("#account-nav");
+  if(!nav)return;
+  if(!user.authenticated){
+    nav.innerHTML='<button class="button account-button" type="button" data-open-login>로그인</button>';
+    $("#profile-modal").close();
+    $("#profile-fields")?.replaceChildren();
+    $("#profile-orders")?.remove();
+    return;
+  }
+  nav.innerHTML='<button class="button account-button" type="button" data-open-profile>내정보</button>';
+  const fields=$("#profile-fields");
+  if(fields){
+    if(user.role==='organizer'){
+      const account=user.kakao_account;
+      const display=account?(account.email||account.name||'카카오 계정 #'+account.account_id):'연결된 계정 없음';
+      const extra=account?.email&&account?.name?'<small>'+esc(account.name)+'</small>':'';
+      fields.innerHTML='<div><dt>카카오톡 계정</dt><dd>'+esc(display)+extra+'</dd></div><div><dt>영차 닉네임</dt><dd>'+esc(user.nickname||'아직 설정하지 않았어요')+'</dd></div>';
+    }else fields.innerHTML='<div><dt>발급 계정</dt><dd>'+esc(user.account_name)+'</dd></div>';
+  }
+  const link=$("#profile-orders");
+  if(link)link.href=user.role==='seller'?'/seller/orders':user.role==='admin'?'/admin/orders':'/my/orders';
+}
+document.addEventListener('click',async event=>{
+  if(!event.target.closest('[data-open-profile]'))return;
+  try{user=await api('/api/me');renderAccount();}catch(error){
+    $("#profile-modal").close();failure(error);
+  }
+});
+async function start() {
+  try {
+    const retryURL =
+      mode === "join"
+        ? "/api/join/" + joinToken
+        : mode === "detail"
+          ? "/api/orders/" + oid
+          : mode === "cafes"
+            ? "/api/orders"
+            : null;
+    if (retryURL && sessionStorage.getItem("retry:" + retryURL)) {
+      $("#error").classList.remove("hidden");
+      $("#error").innerHTML =
+        '이전 요청의 응답을 확인하지 못했습니다. 현재 DB 상태를 확인한 뒤 같은 요청을 재시도할 수 있습니다. <button id="recover-request" class="secondary">이전 요청 결과 확인·재시도</button>';
+      current.retryURL = retryURL;
+    }
+    user = await api("/api/me");
+    renderAccount();
+    if (mode === "cafes") {
+      const d = await api("/api/cafes");
+      cafeData = d.cafes;
+      $("#content").innerHTML = cafeData.length
+        ? '<div class="grid">' + cafeData.map(card).join("") + "</div>"
+        : '<div class="panel empty"><h3>카페를 준비하고 있어요.</h3><p class="muted">운영자가 등록한 제휴 카페가 이곳에 표시됩니다.</p></div>';
+      if (mode === "cafes" && oid) cafeModal(oid);
+    } else if (mode === "join") {
+      const receiptToken = sessionStorage.getItem("receipt:" + joinToken);
+      if (receiptToken) {
+        current.receipt = await api("/api/receipts/" + receiptToken);
+        drawReceipt(current.receipt);
+      } else {
+        const d = await api("/api/join/" + joinToken);
+        current.join = d;
+        if (d.status === "COLLECTING")
+          $("#content").innerHTML =
+            `<div class="panel"><h2>${esc(d.cafe.name)}</h2><span class="muted">${esc(d.number)} · 생성 시점 메뉴·가격</span></div>` +
+            menuCards(d.menus, true);
+        else await refresh(true);
+      }
+    } else if (mode === "admin") await renderAdmin();
+    else if (["orders", "detail", "seller", "admin-orders"].includes(mode)) {
+      if (user.role === "organizer" && !user.nickname) {
+        $("#content").innerHTML =
+          '<div class="panel"><h2>처음 오셨네요! 닉네임을 정해주세요.</h2><p class="muted">2~20자 한글·영문·숫자·밑줄. 최초 설정 후 변경할 수 없습니다.</p><input id="nickname" maxlength="20" placeholder="서비스 닉네임"><button id="save-nickname">닉네임 설정</button></div>';
+        return;
+      }
+      await refresh(true);
+    }
+    if (!["home", "login"].includes(mode)) {
+      connect(true);
+      timer = setInterval(() => refresh(), 3000);
+    }
+  } catch (e) {
+    failure(e);
+    if (!["home", "login"].includes(mode)) connect(false);
+  }
+}
+function beep() {
+  if (!sound || !pending.length || !audio || audio.state !== "running") return;
+  const osc = audio.createOscillator(),
+    gain = audio.createGain();
+  osc.connect(gain);
+  gain.connect(audio.destination);
+  osc.frequency.value = 740;
+  gain.gain.setValueAtTime(0.08, audio.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 0.45);
+  osc.start();
+  osc.stop(audio.currentTime + 0.45);
+}
+setInterval(beep, 4000);
+$("#sound")?.addEventListener("click", async () => {
+  try {
+    audio ||= new AudioContext();
+    await audio.resume();
+    sound = !sound;
+    $("#sound-status").textContent = sound
+      ? "소리 켜짐 · 화면을 열어두세요."
+      : "소리 꺼짐";
+    if (sound) {
+      const old = pending;
+      pending = [{}];
+      beep();
+      pending = old;
+    }
+  } catch (e) {
+    notify("소리를 활성화할 수 없습니다. 기기 설정을 확인하세요.");
+  }
+});
+document.addEventListener("input", (e) => {
+  if (e.target.id === "participant-name")
+    sessionStorage.setItem("participant-name", e.target.value);
+});
+document.addEventListener("change", (e) => {
+  if (e.target.dataset.cartQ !== undefined) {
+    const n = Number(e.target.value);
+    if (!Number.isInteger(n) || n < 1 || n > 99) {
+      notify("수량은 1~99 정수입니다.");
+      return;
+    }
+    cart[Number(e.target.dataset.cartQ)].quantity = n;
+    drawCart();
+  }
+});
+document.addEventListener("click", async (e) => {
+  const b = e.target.closest("button");
+  if (!b || busy) return;
+  try {
+    $("#error").classList.add("hidden");
+    if (b.dataset.cafe) cafeModal(b.dataset.cafe);
+    if (b.dataset.create) {
+      if (!user.authenticated) {
+        location.href =
+          "/login?next=" + encodeURIComponent("/cafes/" + b.dataset.create);
+        return;
+      }
+      if (!user.nickname) {
+        location.href =
+          "/my/orders?next=" + encodeURIComponent("/cafes/" + b.dataset.create);
+        return;
+      }
+      const d = await mutate("/api/orders", { cafe: Number(b.dataset.create) });
+      location.href = "/my/orders/" + d.id;
+    }
+    if (b.id === "recover-request") {
+      const old = JSON.parse(
+        sessionStorage.getItem("retry:" + current.retryURL),
+      );
+      const result = await mutate(current.retryURL, JSON.parse(old.payload));
+      if (mode === "join") {
+        sessionStorage.setItem("receipt:" + joinToken, result.receipt);
+        location.reload();
+      } else if (mode === "cafes") {
+        location.href = "/my/orders/" + result.id;
+      } else await refresh(true);
+    }
+    if (b.id === "save-nickname") {
+      await mutate("/api/nickname", { nickname: $("#nickname").value });
+      const next = root.dataset.returnTo;
+      if (next) location.href = next;
+      else location.reload();
+    }
+    if (b.dataset.add) {
+      const m = current.join.menus.find((x) => x.id === Number(b.dataset.add));
+      const selected = [
+        ...document.querySelectorAll(`[data-opt="${m.id}"]:checked`),
+      ].map((x) => m.options.find((o) => o.id === x.value));
+      for (const g of new Set(
+        m.options.filter((x) => x.group).map((x) => x.group),
+      ))
+        if (selected.filter((x) => x.group === g).length !== 1)
+          throw Error(g + " 옵션을 선택해 주세요.");
+      const q = Number($("#q-" + m.id).value);
+      if (!Number.isInteger(q) || q < 1 || q > 99)
+        throw Error("수량은 1~99 정수입니다.");
+      cart.push({
+        menu: m.id,
+        name: m.name,
+        options: selected.map((x) => x.id),
+        selected,
+        quantity: q,
+        unit_price: m.price + selected.reduce((a, x) => a + x.price, 0),
+      });
+      drawCart();
+      notify(m.name + " 담았어요.");
+    }
+    if (b.dataset.remove !== undefined) {
+      cart.splice(Number(b.dataset.remove), 1);
+      drawCart();
+    }
+    if (b.id === "submit") {
+      const name = $("#participant-name").value.normalize("NFC").trim();
+      if ([...name].length < 1 || [...name].length > 30)
+        throw Error("이름은 1~30자로 입력해 주세요.");
+      const d = await mutate("/api/join/" + joinToken, {
+        name,
+        items: cart.map((x) => ({
+          menu: x.menu,
+          options: x.options,
+          quantity: x.quantity,
+        })),
+      });
+      sessionStorage.setItem("receipt:" + joinToken, d.receipt);
+      current.receipt = await api("/api/receipts/" + d.receipt);
+      cart = [];
+      drawReceipt(current.receipt);
+    }
+    if (b.dataset.copy) {
+      try {
+        await navigator.clipboard.writeText(location.origin + b.dataset.copy);
+        notify("참여 링크를 복사했어요. 카톡방에 직접 공유해 주세요.");
+      } catch {
+        throw Error(
+          "복사가 제한되었습니다. 링크 입력란을 길게 눌러 복사해 주세요.",
+        );
+      }
+    }
+    if (b.dataset.action || b.dataset.edit || b.dataset.delete) {
+      const o = current.order;
+      const action = b.dataset.action || "edit";
+      const data = { action, version: o.version };
+      if (action === "accept") data.minutes = Number($("#minutes").value);
+      if (action === "reject")
+        data.reason = $("#reason").value.normalize("NFC").trim();
+      if (
+        action === "reject" &&
+        ([...data.reason].length < 10 || [...data.reason].length > 50)
+      )
+        throw Error("거절 사유는 10~50자입니다.");
+      if (action === "edit") {
+        data.item = Number(b.dataset.edit || b.dataset.delete);
+        data.quantity = b.dataset.delete
+          ? 0
+          : Number($("#edit-" + data.item).value);
+      }
+      if (
+        ["send", "close", "cancel"].includes(action) &&
+        !confirm(
+          {
+            send: "현재 내역으로 전송할까요? 전송 후 항목 수정은 불가능합니다.",
+            close: "모집을 마감할까요? 다시 열 수 없습니다.",
+            cancel: "전체 주문을 취소할까요?",
+          }[action],
+        )
+      )
+        return;
+      const d = await mutate("/api/orders/" + o.id, data);
+      if (d.error) notify(d.error);
+      await refresh(true);
+    }
+    if (b.id === "filter") {
+      filter = {
+        from: $("#from").value,
+        to: $("#to").value,
+        status: $("#status").value,
+        number: $("#number").value,
+      };
+      if ($("#cafe-filter")) filter.cafe = $("#cafe-filter").value;
+      Object.keys(filter).forEach((k) => {
+        if (!filter[k]) delete filter[k];
+      });
+      page = 1;
+      await loadOrders(true);
+    }
+    if (b.dataset.page) {
+      page = Number(b.dataset.page);
+      await loadOrders(true);
+    }
+    if (b.dataset.sellerDelete) {
+      if (
+        !confirm(
+          "판매자 접근을 해제하고 이 매장의 접수 대기·준비 중 주문을 취소합니다. 계속할까요?",
+        )
+      )
+        return;
+      await mutate("/api/admin", {
+        action: "delete-seller",
+        id: Number(b.dataset.sellerDelete),
+      });
+      await renderAdmin();
+    }
+  } catch (e) {
+    failure(e);
+  }
+});
+document.addEventListener("submit", async (e) => {
+  const f = e.target;
+  if (
+    !["cafe-form"].includes(f.id) &&
+    !["cafe-edit", "menu-form", "seller-form"].some((c) =>
+      f.classList.contains(c),
+    )
+  )
+    return;
+  e.preventDefault();
+  try {
+    const data = Object.fromEntries(new FormData(f));
+    if (f.id === "cafe-form" || f.classList.contains("cafe-edit")) {
+      data.action = "cafe";
+      if (f.dataset.id) data.id = Number(f.dataset.id);
+    }
+    if (f.classList.contains("menu-form")) {
+      data.action = "menu";
+      data.cafe = Number(f.dataset.cafe);
+      if (f.dataset.id) data.id = Number(f.dataset.id);
+      data.price = Number(data.price);
+      data.active = f.elements.active.checked;
+      data.options = data.options
+        .split("\n")
+        .map((x) => x.trim())
+        .filter(Boolean)
+        .map((x) => {
+          const [id, name, price, group] = x.split("|").map((x) => x.trim());
+          return {
+            id,
+            name,
+            price: Number(price),
+            ...(group ? { group } : {}),
+          };
+        });
+    }
+    if (f.classList.contains("seller-form")) {
+      data.action = "seller";
+      data.cafe = Number(f.dataset.cafe);
+    }
+    await mutate("/api/admin", data);
+    f.reset();
+    await renderAdmin();
+    notify("저장했습니다.");
+  } catch (e) {
+    failure(e);
+  }
+});
+document.addEventListener("click", (e) => {
+  const a = e.target.closest("a");
+  if (
+    mode === "seller" &&
+    a &&
+    a.getAttribute("href")?.startsWith("/seller/orders/")
+  ) {
+    e.preventDefault();
+    oid = a.getAttribute("href").split("/").pop();
+    history.pushState(null, "", a.getAttribute("href"));
+    refresh(true);
+  }
+  if (e.target.closest("#back-to-orders")) {
+    oid = "";
+    history.pushState(null, "", "/seller/orders");
+    refresh(true);
+  }
+});
+window.addEventListener("popstate", () => {
+  if (mode === "seller") {
+    oid = location.pathname.startsWith("/seller/orders/")
+      ? location.pathname.split("/").pop()
+      : "";
+    refresh(true);
+  }
+});
+window.addEventListener("online", () => refresh(true));
+window.addEventListener("offline", () => connect(false));
+start();
+</script><form style="display:none">{% csrf_token %}</form>{% endblock %}

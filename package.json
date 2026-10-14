@@ -1,0 +1,11 @@
+{
+  "name": "moa-coffee-browser-tests",
+  "private": true,
+  "scripts": {
+    "test:browser": "node scripts/browser-check.cjs",
+    "test:alerts": "node scripts/seller-alert-check.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}

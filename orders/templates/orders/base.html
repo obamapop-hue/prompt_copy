@@ -1,0 +1,650 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>영차</title><style>
+
+:root {
+  --ink: #202020;
+  --muted: #757575;
+  --accent: #e9252d;
+  --cream: #f5f5f5;
+  --line: #e6e6e6;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: Arial, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  font-size: 15px;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+button,
+.button {
+  border: 0;
+  border-radius: 12px;
+  padding: 13px 19px;
+  cursor: pointer;
+  background: var(--accent);
+  color: white;
+  display: inline-block;
+  font-weight: 600;
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: wait;
+}
+button.secondary,
+.button.secondary {
+  background: #f4f4f4;
+  color: var(--accent);
+}
+button.danger {
+  background: #fff0ec;
+  color: #d31f27;
+}
+input,
+select,
+textarea {
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: white;
+  max-width: 100%;
+  color: var(--ink);
+}
+label {
+  display: block;
+  margin: 16px 0 7px;
+  font-weight: 600;
+}
+header {
+  height: 88px;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+}
+.header-inner {
+  max-width: 1200px;
+  margin: auto;
+  padding: 0 36px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+.brand {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.brand-icon {
+  background: var(--accent);
+  color: #fff;
+  border-radius: 12px;
+  padding: 8px 11px;
+}
+.nav {
+  display: flex;
+  gap: 26px;
+  margin-left: auto;
+  align-items: center;
+}
+.nav a {
+  font-size: 14px;
+}
+.nav .button {
+  font-size: 13px;
+  padding: 11px 16px;
+}
+.container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 40px 36px 70px;
+}
+.muted {
+  color: var(--muted);
+  line-height: 1.7;
+}
+.eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--accent);
+}
+h1 {
+  font-size: 42px;
+  line-height: 1.25;
+  letter-spacing: -1.7px;
+  margin: 14px 0 20px;
+}
+h2 {
+  font-size: 24px;
+  letter-spacing: -0.7px;
+}
+h3 {
+  margin: 10px 0;
+  font-size: 18px;
+}
+.hero {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 45px;
+  align-items: center;
+  margin: 10px 0 56px;
+}
+.hero p {
+  font-size: 16px;
+  line-height: 1.8;
+}
+.hero-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 28px;
+}
+.hero-art {
+  height: 350px;
+  background: #fafafa;
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.circle {
+  position: absolute;
+  width: 275px;
+  height: 275px;
+  background: #f0f0f0;
+  border-radius: 50%;
+}
+.cup {
+  z-index: 1;
+  width: 124px;
+  height: 165px;
+  background: #faf8ee;
+  border-radius: 12px 12px 36px 36px;
+  transform: rotate(-12deg);
+  box-shadow: 14px 18px 0 #a9baa36b;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  font-size: 32px;
+}
+.cup:before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  width: 142px;
+  height: 23px;
+  border-radius: 9px;
+  background: #2c4935;
+}
+.cup:after {
+  content: "영차";
+  font-size: 14px;
+  font-weight: bold;
+  position: absolute;
+  bottom: 28px;
+  letter-spacing: 4px;
+}
+.cup.small {
+  transform: rotate(14deg);
+  width: 99px;
+  height: 140px;
+  margin-left: 19px;
+  margin-top: 60px;
+}
+.cup.small:before {
+  width: 115px;
+}
+.art-tag {
+  position: absolute;
+  z-index: 2;
+  background: white;
+  box-shadow: 0 6px 22px #29413115;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+}
+.art-tag.top {
+  top: 30px;
+  right: 22px;
+}
+.art-tag.bottom {
+  bottom: 28px;
+  left: 20px;
+}
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 24px 0 50px;
+}
+.step {
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fff;
+}
+.step-num {
+  color: #93a18f;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 0;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  overflow: hidden;
+}
+.card-body {
+  padding: 23px;
+}
+.cafe-picture {
+  height: 155px;
+  background: #f8f8f8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  color: #e9252d;
+  font-size: 62px;
+}
+.cafe-picture:after {
+  content: "COFFEE & A LITTLE BREAK";
+  position: absolute;
+  bottom: 17px;
+  font-size: 10px;
+  letter-spacing: 3px;
+}
+.badge {
+  display: inline-flex;
+  background: #fff0f1;
+  color: #d92129;
+  border-radius: 7px;
+  padding: 6px 9px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.badge.warn {
+  background: #fff1dc;
+  color: #89642a;
+}
+.panel {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 25px;
+  margin: 18px 0;
+}
+.flex {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.between {
+  justify-content: space-between;
+}
+.summary {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  background: #fafafa;
+  padding: 22px;
+  border-radius: 13px;
+  margin: 20px 0;
+}
+.summary strong {
+  font-size: 25px;
+}
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  padding: 17px 0;
+  border-bottom: 1px solid var(--line);
+}
+.row:last-child {
+  border-bottom: 0;
+}
+.row p {
+  margin: 6px 0;
+}
+.row input[type="number"] {
+  width: 80px;
+}
+.alert {
+  padding: 15px;
+  border-radius: 12px;
+  margin: 16px 0;
+  background: #fff0e7;
+  color: #854728;
+}
+.connection {
+  font-size: 12px;
+  color: var(--muted);
+}
+.toolbar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+.toolbar input {
+  max-width: 170px;
+}
+.empty {
+  text-align: center;
+  padding: 45px 15px;
+}
+.timeline {
+  font-size: 13px;
+}
+.timeline div {
+  padding: 12px;
+  border-left: 2px solid #dedede;
+  margin-left: 6px;
+}
+.menu-card {
+  padding: 22px;
+}
+.menu-card p {
+  min-height: 38px;
+}
+.menu-icon {
+  font-size: 35px;
+  background: #f8f8f8;
+  border-radius: 12px;
+  padding: 15px;
+  width: 75px;
+  text-align: center;
+}
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+.options label {
+  margin: 0;
+  font-size: 12px;
+  padding: 9px;
+  background: #f7f7f7;
+  border-radius: 8px;
+  font-weight: normal;
+}
+.login-box {
+  max-width: 420px;
+  margin: 50px auto;
+}
+.login-box input {
+  width: 100%;
+}
+.login-box button {
+  width: 100%;
+  margin-top: 23px;
+}
+footer {
+  max-width: 1200px;
+  margin: 0 auto;
+  border-top: 1px solid var(--line);
+  padding: 28px 36px;
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 12px;
+}
+.demo-banner {
+  background: #f7f7f7;
+  text-align: center;
+  padding: 10px;
+  font-size: 12px;
+  color: #888888;
+}
+.toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  background: #202020;
+  color: white;
+  padding: 20px 26px;
+  border-radius: 14px;
+  z-index: 8;
+  box-shadow: 0 8px 30px #0002;
+}
+.seller-popup {
+  border: 2px solid #dc9c3e;
+  background: #fff8e9;
+}
+.notice {
+  font-size: 12px;
+  background: #fafafa;
+  padding: 12px;
+  border-radius: 10px;
+}
+dialog {
+  max-width: 540px;
+  width: 90%;
+  border: 0;
+  border-radius: 18px;
+  padding: 28px;
+  box-shadow: 0 20px 90px #0003;
+}
+dialog::backdrop {
+  background: #263a2e66;
+}
+.hidden {
+  display: none !important;
+}
+pre {
+  white-space: pre-wrap;
+  font-size: 12px;
+}
+details {
+  margin: 14px 0;
+}
+summary {
+  cursor: pointer;
+}
+@media (max-width: 760px) {
+  header {
+    height: 72px;
+  }
+  .header-inner {
+    padding: 0 20px;
+    gap: 12px;
+  }
+  .brand {
+    font-size: 21px;
+  }
+  .nav {
+    gap: 14px;
+  }
+  .nav a:first-child {
+    display: none;
+  }
+  .container {
+    padding: 24px 20px 48px;
+  }
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 26px;
+    margin-bottom: 32px;
+  }
+  h1 {
+    font-size: 35px;
+  }
+  .hero-art {
+    height: 270px;
+  }
+  .steps {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 30px;
+  }
+  .step {
+    padding: 16px;
+  }
+  .step h3 {
+    font-size: 16px;
+  }
+  .step p {
+    margin-bottom: 0;
+  }
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .summary {
+    gap: 20px;
+  }
+  .row {
+    align-items: flex-start;
+  }
+  .row .flex {
+    justify-content: flex-end;
+  }
+  .panel {
+    padding: 19px;
+  }
+  .toolbar input {
+    max-width: 140px;
+  }
+  footer {
+    padding: 24px 20px;
+    gap: 15px;
+  }
+  .hero-buttons .button {
+    padding: 14px;
+  }
+  .cup {
+    height: 150px;
+  }
+  .cup.small {
+    height: 120px;
+  }
+}
+
+/* 영차: white community panels, thin dividers, red actions. */
+button, .button { border-radius: 5px; }
+button.secondary, .button.secondary { color: var(--ink); border: 1px solid var(--line); background: #fff; }
+header { height: 76px; }
+.header-inner, .container, footer { max-width: 1100px; }
+.brand { color: var(--accent); font-size: 34px; font-weight: 900; letter-spacing: -2px; }
+.brand:hover { opacity: .85; }
+.demo-label { font-size: 10px; font-weight: 500; color: #888; letter-spacing: 0; padding: 4px 7px; border: 1px solid #e6e6e6; border-radius: 3px; margin-left: 10px; }
+h1 { font-size: 30px; letter-spacing: -1px; }
+.card, .panel { border-radius: 5px; }
+.card { box-shadow: none; }
+.badge { border-radius: 3px; }
+.summary, .notice, .alert { border-radius: 4px; }
+input, select, textarea { border-radius: 4px; }
+footer { min-height: 76px; align-items: center; border-top: none; font-size: 11px; }
+footer span { margin-left: auto; }
+.home-page { min-height: calc(100svh - 152px); display: flex; align-items: center; justify-content: center; padding: 48px 20px; }
+.home-content { width: 100%; max-width: 440px; }
+.home-actions { background: #fff; border: 1px solid #e1e1e1; border-top: 3px solid var(--accent); padding: 30px; display: grid; gap: 14px; }
+.home-actions #account-nav, .home-actions form { display: block; width: 100%; margin: 0; }
+.home-actions button, .home-actions .button { display: flex; align-items: center; justify-content: center; width: 100%; height: 58px; padding: 16px; font-size: 17px; font-weight: 700; }
+.home-actions .home-login, .home-actions #account-nav .secondary { background: #fff; border: 1px solid #dedede; color: #222; }
+.home-actions .home-order { background: var(--accent); color: #fff; }
+.home-actions .home-list { background: #fafafa; border: 1px solid #dedede; color: #222; }
+.home-actions .button:hover, .home-actions button:hover { filter: brightness(.96); }
+.home-status:empty, .home-page #content, .home-page #cart, .home-page #pager { display: none; }
+.home-page .connection { display: none; }
+dialog { border-radius: 6px; max-width: 360px; padding: 30px; }
+dialog::backdrop { background: #0007; }
+.login-dialog h2 { font-size: 22px; margin: 4px 0 28px; }
+.dialog-close { position: absolute; top: 14px; right: 14px; padding: 5px 9px; background: transparent; color: #777; font-size: 20px; line-height: 1; }
+.kakao-button { width: 100%; background: #fee500; color: #191919; border-radius: 4px; height: 52px; display: flex; align-items: center; justify-content: center; gap: 9px; }
+.kakao-button:disabled { opacity: 1; cursor: not-allowed; }
+.kakao-icon { width: 19px; height: 15px; border-radius: 50%; background: #191919; position: relative; }
+.kakao-icon::after { content: ''; position: absolute; left: 3px; bottom: -3px; width: 6px; height: 6px; background: #191919; clip-path: polygon(0 0, 100% 0, 0 100%); }
+.login-unavailable { margin: 15px 0 0; font-size: 12px; color: #888; text-align: center; }
+:focus-visible { outline: 3px solid #f4a5aa; outline-offset: 3px; }
+@media(max-width:760px) { header { height: 68px; } .brand { font-size: 30px; } .home-page { min-height: calc(100svh - 136px); } .home-actions { padding: 24px; } footer { min-height: 68px; } }
+
+.home-content { max-width: 640px; text-align: center; }
+.home-title { font-size: clamp(28px, 4.8vw, 48px); font-weight: 800; letter-spacing: -1.8px; line-height: 1.35; margin: 0 0 34px; word-break: keep-all; }
+.home-actions { display: block; background: transparent; border: 0; padding: 0; }
+.home-actions .home-order { max-width: 300px; margin: auto; height: 60px; font-size: 18px; }
+.account-button { min-width: 84px; padding: 11px 18px; }
+.profile-dialog h2 { margin: 4px 0 26px; font-size: 22px; }
+.profile-fields { margin: 0 0 26px; }
+.profile-fields div { padding: 15px 0; border-bottom: 1px solid var(--line); }
+.profile-fields dt { color: #777; font-size: 12px; margin-bottom: 9px; }
+.profile-fields dd { margin: 0; font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
+.profile-fields dd small { display: block; color: #777; font-size: 12px; font-weight: 400; margin-top: 5px; }
+.profile-orders { display: flex; width: 100%; justify-content: center; align-items: center; min-height: 48px; }
+.profile-logout { margin: 17px 0 0; text-align: center; }
+.profile-logout button { background: transparent; color: #777; font-size: 12px; padding: 7px 12px; }
+@media(max-width:760px) { .home-title { letter-spacing: -1px; } .home-actions { padding: 0; } .home-actions .home-order { max-width: 280px; } }
+</style></head><body>
+<header><div class="header-inner">
+<a class="brand" href="/" aria-label="영차 홈">영차{% if demo %}<span class="demo-label">시연</span>{% endif %}</a>
+{% if not role %}<nav class="nav"><span id="account-nav">{% if request.user.is_authenticated %}<button class="button account-button" type="button" data-open-profile>내정보</button>{% else %}<button class="button account-button" type="button" data-open-login>로그인</button>{% endif %}</span></nav>{% endif %}
+</div></header>
+{% block content %}{% endblock %}
+<footer><span><a href="/seller/login">판매자 로그인</a> &nbsp; · &nbsp; <a href="/admin/login">운영자 로그인</a></span></footer>
+<dialog id="login-modal" class="login-dialog" aria-labelledby="login-title">
+<button type="button" class="dialog-close" data-close-login aria-label="닫기">×</button>
+<h2 id="login-title">로그인</h2>
+{% if kakao_ready %}
+<form method="post" action="/accounts/kakao/login/?next={{login_next|default:'/'|urlencode}}">{% csrf_token %}<button class="kakao-button"><span class="kakao-icon" aria-hidden="true"></span>카카오톡 로그인</button></form>
+{% else %}
+<button type="button" class="kakao-button" disabled><span class="kakao-icon" aria-hidden="true"></span>카카오톡 로그인</button>
+<p class="login-unavailable">카카오 로그인 준비 중</p>
+{% endif %}
+</dialog>
+<dialog id="profile-modal" class="profile-dialog" aria-labelledby="profile-title">
+<button type="button" class="dialog-close" data-close-profile aria-label="닫기">×</button>
+<h2 id="profile-title">내정보</h2>
+{% if request.user.is_authenticated %}
+<dl id="profile-fields" class="profile-fields"><div><dt>계정</dt><dd>불러오는 중</dd></div></dl>
+<a id="profile-orders" class="button profile-orders" href="/my/orders">내 주문 내역</a>
+<form class="profile-logout" method="post" action="/logout">{% csrf_token %}<button>로그아웃</button></form>
+{% endif %}
+</dialog>
+<script>
+(() => {
+ const login=document.getElementById('login-modal'),profile=document.getElementById('profile-modal');
+ document.addEventListener('click',event=>{
+  if(event.target.closest('[data-open-login]'))login.showModal();
+  if(event.target.closest('[data-close-login]'))login.close();
+  if(event.target.closest('[data-open-profile]'))profile.showModal();
+  if(event.target.closest('[data-close-profile]'))profile.close();
+ });
+ for(const dialog of [login,profile])dialog.addEventListener('click',event=>{
+  if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)dialog.close();}
+ });
+ if(document.querySelector('#app')?.dataset.mode==='login')login.showModal();
+})();
+</script>
+{% block scripts %}{% endblock %}</body></html>
