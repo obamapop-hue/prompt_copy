@@ -613,6 +613,14 @@ dialog::backdrop { background: #0007; }
 .preview-menu article span { white-space:nowrap; color:#666; }
 .preview-note { color:#777; font-size:13px; }
 #cafe-modal { width: min(440px, calc(100% - 32px)); max-width:440px; }
+
+/* Mobile touch targets and dialogs stay usable on short screens. */
+.dialog-close { min-width: 44px; min-height: 44px; top: 6px; right: 6px; display: grid; place-items: center; }
+dialog { max-height: calc(100svh - 32px); overflow-y: auto; overscroll-behavior: contain; }
+footer { padding: 12px 20px; }
+footer span { display: flex; align-items: center; gap: 8px; }
+footer a { display: inline-flex; align-items: center; min-height: 44px; }
+.account-button { min-height: 44px; }
 </style></head>
 <body>
 <header><div class="header-inner"><a class="brand" href="./index.html" aria-label="영차 홈">영차</a><nav class="nav"><button class="account-button" type="button" data-open="login-modal">로그인</button></nav></div></header>
