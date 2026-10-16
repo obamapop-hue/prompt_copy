@@ -27,7 +27,7 @@ cd /workspace/prompt_copy
 
 설치는 잠긴 requirements.txt를 사용하며 `.local/runtime.env`의 개발용 키를 처음 한 번 생성한다. 기존 키·DB·시연 계정은 덮어쓰지 않는다. `.local` 전체는 비공개·Git 제외 대상이다. 개발 DB와 실제 운영 DB는 반드시 분리한다. 시연 계정은 `.local/demo-accounts.json`에 owner-only 권한으로 저장되며 채팅·로그·커밋에 올리지 않는다. 총무 시험용 세션은 Kakao 시험의 대체가 아니다. 공개 화면에 가짜 총무 로그인 버튼을 추가하지 않았다.
 
-기존 index.html은 이전 프로젝트의 보존 파일이며 새 Django 사이트는 이 파일을 사용하지 않는다.
+루트 `index.html`은 카카오·서버 설정 없이 열 수 있는 영차 홈페이지 미리보기다. 로그인 팝업과 시연용 메뉴 확인만 제공하며 실제 로그인·주문 저장은 하지 않는다. 실제 주문 앱은 Django에서 실행한다.
 
 ## 기능
 

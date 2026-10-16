@@ -1,133 +1,631 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
-<head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2575.7">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
-  </style>
-</head>
+<!doctype html>
+<html lang="ko">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#e9252d"><title>영차</title><style>
+
+:root {
+  --ink: #202020;
+  --muted: #757575;
+  --accent: #e9252d;
+  --cream: #f5f5f5;
+  --line: #e6e6e6;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: Arial, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  font-size: 15px;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+button,
+.button {
+  border: 0;
+  border-radius: 12px;
+  padding: 13px 19px;
+  cursor: pointer;
+  background: var(--accent);
+  color: white;
+  display: inline-block;
+  font-weight: 600;
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: wait;
+}
+button.secondary,
+.button.secondary {
+  background: #f4f4f4;
+  color: var(--accent);
+}
+button.danger {
+  background: #fff0ec;
+  color: #d31f27;
+}
+input,
+select,
+textarea {
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: white;
+  max-width: 100%;
+  color: var(--ink);
+}
+label {
+  display: block;
+  margin: 16px 0 7px;
+  font-weight: 600;
+}
+header {
+  height: 88px;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+}
+.header-inner {
+  max-width: 1200px;
+  margin: auto;
+  padding: 0 36px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+.brand {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.brand-icon {
+  background: var(--accent);
+  color: #fff;
+  border-radius: 12px;
+  padding: 8px 11px;
+}
+.nav {
+  display: flex;
+  gap: 26px;
+  margin-left: auto;
+  align-items: center;
+}
+.nav a {
+  font-size: 14px;
+}
+.nav .button {
+  font-size: 13px;
+  padding: 11px 16px;
+}
+.container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 40px 36px 70px;
+}
+.muted {
+  color: var(--muted);
+  line-height: 1.7;
+}
+.eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--accent);
+}
+h1 {
+  font-size: 42px;
+  line-height: 1.25;
+  letter-spacing: -1.7px;
+  margin: 14px 0 20px;
+}
+h2 {
+  font-size: 24px;
+  letter-spacing: -0.7px;
+}
+h3 {
+  margin: 10px 0;
+  font-size: 18px;
+}
+.hero {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 45px;
+  align-items: center;
+  margin: 10px 0 56px;
+}
+.hero p {
+  font-size: 16px;
+  line-height: 1.8;
+}
+.hero-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 28px;
+}
+.hero-art {
+  height: 350px;
+  background: #fafafa;
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.circle {
+  position: absolute;
+  width: 275px;
+  height: 275px;
+  background: #f0f0f0;
+  border-radius: 50%;
+}
+.cup {
+  z-index: 1;
+  width: 124px;
+  height: 165px;
+  background: #faf8ee;
+  border-radius: 12px 12px 36px 36px;
+  transform: rotate(-12deg);
+  box-shadow: 14px 18px 0 #a9baa36b;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  font-size: 32px;
+}
+.cup:before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  width: 142px;
+  height: 23px;
+  border-radius: 9px;
+  background: #2c4935;
+}
+.cup:after {
+  content: "영차";
+  font-size: 14px;
+  font-weight: bold;
+  position: absolute;
+  bottom: 28px;
+  letter-spacing: 4px;
+}
+.cup.small {
+  transform: rotate(14deg);
+  width: 99px;
+  height: 140px;
+  margin-left: 19px;
+  margin-top: 60px;
+}
+.cup.small:before {
+  width: 115px;
+}
+.art-tag {
+  position: absolute;
+  z-index: 2;
+  background: white;
+  box-shadow: 0 6px 22px #29413115;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+}
+.art-tag.top {
+  top: 30px;
+  right: 22px;
+}
+.art-tag.bottom {
+  bottom: 28px;
+  left: 20px;
+}
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 24px 0 50px;
+}
+.step {
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fff;
+}
+.step-num {
+  color: #93a18f;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 0;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  overflow: hidden;
+}
+.card-body {
+  padding: 23px;
+}
+.cafe-picture {
+  height: 155px;
+  background: #f8f8f8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  color: #e9252d;
+  font-size: 62px;
+}
+.cafe-picture:after {
+  content: "COFFEE & A LITTLE BREAK";
+  position: absolute;
+  bottom: 17px;
+  font-size: 10px;
+  letter-spacing: 3px;
+}
+.badge {
+  display: inline-flex;
+  background: #fff0f1;
+  color: #d92129;
+  border-radius: 7px;
+  padding: 6px 9px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.badge.warn {
+  background: #fff1dc;
+  color: #89642a;
+}
+.panel {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 25px;
+  margin: 18px 0;
+}
+.flex {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.between {
+  justify-content: space-between;
+}
+.summary {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  background: #fafafa;
+  padding: 22px;
+  border-radius: 13px;
+  margin: 20px 0;
+}
+.summary strong {
+  font-size: 25px;
+}
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  padding: 17px 0;
+  border-bottom: 1px solid var(--line);
+}
+.row:last-child {
+  border-bottom: 0;
+}
+.row p {
+  margin: 6px 0;
+}
+.row input[type="number"] {
+  width: 80px;
+}
+.alert {
+  padding: 15px;
+  border-radius: 12px;
+  margin: 16px 0;
+  background: #fff0e7;
+  color: #854728;
+}
+.connection {
+  font-size: 12px;
+  color: var(--muted);
+}
+.toolbar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+.toolbar input {
+  max-width: 170px;
+}
+.empty {
+  text-align: center;
+  padding: 45px 15px;
+}
+.timeline {
+  font-size: 13px;
+}
+.timeline div {
+  padding: 12px;
+  border-left: 2px solid #dedede;
+  margin-left: 6px;
+}
+.menu-card {
+  padding: 22px;
+}
+.menu-card p {
+  min-height: 38px;
+}
+.menu-icon {
+  font-size: 35px;
+  background: #f8f8f8;
+  border-radius: 12px;
+  padding: 15px;
+  width: 75px;
+  text-align: center;
+}
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+.options label {
+  margin: 0;
+  font-size: 12px;
+  padding: 9px;
+  background: #f7f7f7;
+  border-radius: 8px;
+  font-weight: normal;
+}
+.login-box {
+  max-width: 420px;
+  margin: 50px auto;
+}
+.login-box input {
+  width: 100%;
+}
+.login-box button {
+  width: 100%;
+  margin-top: 23px;
+}
+footer {
+  max-width: 1200px;
+  margin: 0 auto;
+  border-top: 1px solid var(--line);
+  padding: 28px 36px;
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 12px;
+}
+.demo-banner {
+  background: #f7f7f7;
+  text-align: center;
+  padding: 10px;
+  font-size: 12px;
+  color: #888888;
+}
+.toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  background: #202020;
+  color: white;
+  padding: 20px 26px;
+  border-radius: 14px;
+  z-index: 8;
+  box-shadow: 0 8px 30px #0002;
+}
+.seller-popup {
+  border: 2px solid #dc9c3e;
+  background: #fff8e9;
+}
+.notice {
+  font-size: 12px;
+  background: #fafafa;
+  padding: 12px;
+  border-radius: 10px;
+}
+dialog {
+  max-width: 540px;
+  width: 90%;
+  border: 0;
+  border-radius: 18px;
+  padding: 28px;
+  box-shadow: 0 20px 90px #0003;
+}
+dialog::backdrop {
+  background: #263a2e66;
+}
+.hidden {
+  display: none !important;
+}
+pre {
+  white-space: pre-wrap;
+  font-size: 12px;
+}
+details {
+  margin: 14px 0;
+}
+summary {
+  cursor: pointer;
+}
+@media (max-width: 760px) {
+  header {
+    height: 72px;
+  }
+  .header-inner {
+    padding: 0 20px;
+    gap: 12px;
+  }
+  .brand {
+    font-size: 21px;
+  }
+  .nav {
+    gap: 14px;
+  }
+  .nav a:first-child {
+    display: none;
+  }
+  .container {
+    padding: 24px 20px 48px;
+  }
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 26px;
+    margin-bottom: 32px;
+  }
+  h1 {
+    font-size: 35px;
+  }
+  .hero-art {
+    height: 270px;
+  }
+  .steps {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 30px;
+  }
+  .step {
+    padding: 16px;
+  }
+  .step h3 {
+    font-size: 16px;
+  }
+  .step p {
+    margin-bottom: 0;
+  }
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .summary {
+    gap: 20px;
+  }
+  .row {
+    align-items: flex-start;
+  }
+  .row .flex {
+    justify-content: flex-end;
+  }
+  .panel {
+    padding: 19px;
+  }
+  .toolbar input {
+    max-width: 140px;
+  }
+  footer {
+    padding: 24px 20px;
+    gap: 15px;
+  }
+  .hero-buttons .button {
+    padding: 14px;
+  }
+  .cup {
+    height: 150px;
+  }
+  .cup.small {
+    height: 120px;
+  }
+}
+
+/* 영차: white community panels, thin dividers, red actions. */
+button, .button { border-radius: 5px; }
+button.secondary, .button.secondary { color: var(--ink); border: 1px solid var(--line); background: #fff; }
+header { height: 76px; }
+.header-inner, .container, footer { max-width: 1100px; }
+.brand { color: var(--accent); font-size: 34px; font-weight: 900; letter-spacing: -2px; }
+.brand:hover { opacity: .85; }
+.demo-label { font-size: 10px; font-weight: 500; color: #888; letter-spacing: 0; padding: 4px 7px; border: 1px solid #e6e6e6; border-radius: 3px; margin-left: 10px; }
+h1 { font-size: 30px; letter-spacing: -1px; }
+.card, .panel { border-radius: 5px; }
+.card { box-shadow: none; }
+.badge { border-radius: 3px; }
+.summary, .notice, .alert { border-radius: 4px; }
+input, select, textarea { border-radius: 4px; }
+footer { min-height: 76px; align-items: center; border-top: none; font-size: 11px; }
+footer span { margin-left: auto; }
+.home-page { min-height: calc(100svh - 152px); display: flex; align-items: center; justify-content: center; padding: 48px 20px; }
+.home-content { width: 100%; max-width: 440px; }
+.home-actions { background: #fff; border: 1px solid #e1e1e1; border-top: 3px solid var(--accent); padding: 30px; display: grid; gap: 14px; }
+.home-actions #account-nav, .home-actions form { display: block; width: 100%; margin: 0; }
+.home-actions button, .home-actions .button { display: flex; align-items: center; justify-content: center; width: 100%; height: 58px; padding: 16px; font-size: 17px; font-weight: 700; }
+.home-actions .home-login, .home-actions #account-nav .secondary { background: #fff; border: 1px solid #dedede; color: #222; }
+.home-actions .home-order { background: var(--accent); color: #fff; }
+.home-actions .home-list { background: #fafafa; border: 1px solid #dedede; color: #222; }
+.home-actions .button:hover, .home-actions button:hover { filter: brightness(.96); }
+.home-status:empty, .home-page #content, .home-page #cart, .home-page #pager { display: none; }
+.home-page .connection { display: none; }
+dialog { border-radius: 6px; max-width: 360px; padding: 30px; }
+dialog::backdrop { background: #0007; }
+.login-dialog h2 { font-size: 22px; margin: 4px 0 28px; }
+.dialog-close { position: absolute; top: 14px; right: 14px; padding: 5px 9px; background: transparent; color: #777; font-size: 20px; line-height: 1; }
+.kakao-button { width: 100%; background: #fee500; color: #191919; border-radius: 4px; height: 52px; display: flex; align-items: center; justify-content: center; gap: 9px; }
+.kakao-button:disabled { opacity: 1; cursor: not-allowed; }
+.kakao-icon { width: 19px; height: 15px; border-radius: 50%; background: #191919; position: relative; }
+.kakao-icon::after { content: ''; position: absolute; left: 3px; bottom: -3px; width: 6px; height: 6px; background: #191919; clip-path: polygon(0 0, 100% 0, 0 100%); }
+.login-unavailable { margin: 15px 0 0; font-size: 12px; color: #888; text-align: center; }
+:focus-visible { outline: 3px solid #f4a5aa; outline-offset: 3px; }
+@media(max-width:760px) { header { height: 68px; } .brand { font-size: 30px; } .home-page { min-height: calc(100svh - 136px); } .home-actions { padding: 24px; } footer { min-height: 68px; } }
+
+.home-content { max-width: 640px; text-align: center; }
+.home-title { font-size: clamp(28px, 4.8vw, 48px); font-weight: 800; letter-spacing: -1.8px; line-height: 1.35; margin: 0 0 34px; word-break: keep-all; }
+.home-actions { display: block; background: transparent; border: 0; padding: 0; }
+.home-actions .home-order { max-width: 300px; margin: auto; height: 60px; font-size: 18px; }
+.account-button { min-width: 84px; padding: 11px 18px; }
+.profile-dialog h2 { margin: 4px 0 26px; font-size: 22px; }
+.profile-fields { margin: 0 0 26px; }
+.profile-fields div { padding: 15px 0; border-bottom: 1px solid var(--line); }
+.profile-fields dt { color: #777; font-size: 12px; margin-bottom: 9px; }
+.profile-fields dd { margin: 0; font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
+.profile-fields dd small { display: block; color: #777; font-size: 12px; font-weight: 400; margin-top: 5px; }
+.profile-orders { display: flex; width: 100%; justify-content: center; align-items: center; min-height: 48px; }
+.profile-logout { margin: 17px 0 0; text-align: center; }
+.profile-logout button { background: transparent; color: #777; font-size: 12px; padding: 7px 12px; }
+@media(max-width:760px) { .home-title { letter-spacing: -1px; } .home-actions { padding: 0; } .home-actions .home-order { max-width: 280px; } }
+
+.preview-menu { text-align:left; margin-top:24px; }
+.preview-menu article { display:flex; justify-content:space-between; padding:18px 0; border-bottom:1px solid var(--line); gap:16px; }
+.preview-menu article span { white-space:nowrap; color:#666; }
+.preview-note { color:#777; font-size:13px; }
+#cafe-modal { width: min(440px, calc(100% - 32px)); max-width:440px; }
+</style></head>
 <body>
-<p class="p1">&lt;!DOCTYPE html&gt;</p>
-<p class="p1">&lt;html lang="ko"&gt;</p>
-<p class="p1">&lt;head&gt;</p>
-<p class="p1">&lt;meta charset="UTF-8" /&gt;</p>
-<p class="p1">&lt;title&gt;프롬프트 복사 완료&lt;/title&gt;</p>
-<p class="p1">&lt;style&gt;</p>
-<p class="p1">body {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>font-family: Arial, sans-serif;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>padding: 40px;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>text-align: center;</p>
-<p class="p1">}</p>
-<p class="p1">.hidden {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>opacity: 0;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>position: absolute;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>pointer-events: none;</p>
-<p class="p1">}</p>
-<p class="p1">&lt;/style&gt;</p>
-<p class="p1">&lt;/head&gt;</p>
-<p class="p1">&lt;body&gt;</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;textarea id="prompt" class="hidden"&gt;</p>
-<p class="p1">너는 MBTI 기반 성격분석 전문가이며, 사용자와의 인터뷰를 통해 MBTI를 추론하는 심층 상담을 진행한다.</p>
-<p class="p1">1. MBTI 성격 분석의 정의는 다음과 같다.</p>
-<p class="p1"><span class="Apple-converted-space">   </span>MBTI는 칼 융의 심리유형론을 기반으로 Myers-Briggs가 개발한 도구이며, 4가지 이분법적 선호(에너지 방향, 인식 기능, 판단 기능, 생활 양식)를 통해 16가지 심리 유형을 도출한다. 이는 선호(preference)이지 능력(ability)이 아니며, 모든 유형은 동등한 가치를 가진다.</p>
-<p class="p1">2. MBTI 성격 분석의 4가지 척도는 다음과 같다.</p>
-<p class="p1"><span class="Apple-converted-space">   </span>1. 외향(Extraversion) – 내향(Introversion)</p>
-<p class="p1"><span class="Apple-converted-space">   </span>2. 감각(Sensing) – 직관(Intuition)</p>
-<p class="p1"><span class="Apple-converted-space">   </span>3. 사고(Thinking) – 감정(Feeling)</p>
-<p class="p1"><span class="Apple-converted-space">   </span>4. 판단(Judging) – 인식(Perceiving)</p>
-<p class="p1"><span class="Apple-converted-space">   </span>5. 이 네 축이 결합되어 16가지 유형이 만들어지며, 모든 척도는 연속선상에 있다.</p>
-<p class="p1">3. 내가 MBTI를 하는 진짜 이유 (절대 상담 중엔 드러내지 말 것)</p>
-<p class="p1"><span class="Apple-converted-space">   </span>자기애 즉각 충족 + 자기합리화 도구 / 타인을 한 방에 재단하는 게으른 심리학 / SNS용 정체성 콘텐츠 / Barnum·Forer 효과 극대화 / 연애·섹스 궁합 판타지 / 집단 내 놀림거리 확보 / 불안의 시대에 주는 가짜 통제감 / 순수한 중독성 엔터테인먼트.</p>
-<p class="p1">4. 행동 규칙</p>
-<p class="p1"><span class="Apple-converted-space">   </span>- 정확히 20가지 질문만, 한 번에 한 개씩만 던진다.</p>
-<p class="p1"><span class="Apple-converted-space">   </span>- 질문은 절대 딱딱한 단문으로 하지 말고, 친구랑 수다 떨듯이 부드럽고 친근하게 풀어서 말해야 한다.</p>
-<p class="p1"><span class="Apple-converted-space">   </span>- 답변 오면 반드시 친한 친구처럼 자연스럽게 반응 먼저 → 그 다음에만 다음 질문</p>
-<p class="p1"><span class="Apple-converted-space">   </span>- 예시 답변 절대 주지 말고 완전 자유롭게 말하게 유도</p>
-<p class="p1"><span class="Apple-converted-space">   </span>- 점수는 오직 내부에서만 계산</p>
-<p class="p1">──────────────────────────────────</p>
-<p class="p1">너는 25년 경력 MBTI 전문가지만, 내담자와는 절친한 동네 친구처럼 말한다.</p>
-<p class="p1">리액션 강도: 과하지 않게, 딱 친한 친구랑 카톡할 때 그 느낌</p>
-<p class="p1">**비속어·약한 비속어 일체 금지 (개, 존나, 새끼, 미쳤네 등 모두 사용 불가)**</p>
-<p class="p1">허용 리액션 예시 (신나고 재밌는 말투만)</p>
-<p class="p1">- “ㅋㅋㅋㅋㅋ 진짜?”, “헐 대박”, “와 ㄹㅇ?”, “ㅋㅋㅋ 역시 너 다워”,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>“아니 웃기네 ㅋㅋㅋ”, “오 이건 좀 의외인데?”, “ㅎㅎ 완전 공감”,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>“헐;; 나도 그래”, “ㅋㅋㅋ 이거 너무 웃겨”, “와 진짜 귀여운데?”,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>“와 이건 진짜 레전드다 ㅋㅋㅋ”, “헐 나도 똑같아 ㅋㅋㅋ”</p>
-<p class="p1">점수 계산 (내부 전용)</p>
-<p class="p1">- 각 문항 +2 / 0 / -2</p>
-<p class="p1">- 최종 ±6 이상 강함 / ±2~4 약함 / ±1 중립</p>
-<p class="p1">질문 목록 &amp; 내부 판단 기준 (내담자에게 절대 노출 금지)</p>
-<p class="p1">1. 갑자기 약속 취소되면 솔직히 속으로 뭐라고 생각해? → E+2 외부활동 아쉬움 / I+2 혼자만의 시간 반가움</p>
-<p class="p1">2. 처음 가는 모임에 들어가면 제일 먼저 뭘 해? → E+2 사람에게 다가감 / I+2 관찰·거리 두기</p>
-<p class="p1">3. 친구가 울면서 전화 오면 제일 먼저 하는 반응은? → T+2 사실·해결 / F+2 공감·위로</p>
-<p class="p1">4. 여행 중 계획 완전히 틀어지면 기분 어때? → J+2 불안·재계획 / P+2 설렘·즉흥</p>
-<p class="p1">5. 새로운 아이디어가 떠오르면 가장 먼저 드는 생각은? → S+2 현실성 검토 / N+2 확장·연상</p>
-<p class="p1">6. 방이 엉망일 때 진짜 기분은? → J+2 불편·정리욕 / P+2 별 상관없음</p>
-<p class="p1">7. 영화 볼 때 뭐에 제일 꽂혀? → S+2 구체적 디테일 / N+2 상징·메시지</p>
-<p class="p1">8. 중요한 결정을 내려야 할 때 네 기준은? → T+2 논리·객관 / F+2 사람·감정</p>
-<p class="p1">9. 파티 끝나고 집 오면 보통 어떤 상태야? → E+2 에너지 남음 / I+2 완전 방전</p>
-<p class="p1">10. 마감 3일 남았을 때 네 상태는? → J+2 거의 끝 / P+2 이제 시작</p>
-<p class="p1">11. 친구가 실수했을 때 하는 말은? → T+2 직설·지적 / F+2 위로·다독임</p>
-<p class="p1">12. 카페에서 모르는 사람이 말 걸면? → E+2 반갑게 대화 / I+2 최소한으로 끝냄</p>
-<p class="p1">13. 쇼핑할 때 보통 어떤 스타일이야? → S+2 계획·필요만 / N+2 이것저것 탐색</p>
-<p class="p1">14. 친구가 “나 진짜 우울해” 하면 뭐라고 해? → T+2 해결책 / F+2 감정 공감</p>
-<p class="p1">15. 일정표나 투두리스트는 원래 쓰는 편이야? → J+2 필수 / P+2 거의 안 씀</p>
-<p class="p1">16. 새로운 맛집 갔을 때 메뉴 어떻게 골라? → S+2 검증된 메뉴 / N+2 직감·이름</p>
-<p class="p1">17. 스트레스 심할 때 제일 하고 싶은 행동은? → E+2 사람 만나기 / I+2 혼자 있기</p>
-<p class="p1">18. 팀 프로젝트 하면 자연스럽게 맡는 역할은? → T+2 구조·마감 / F+2 분위기·조화</p>
-<p class="p1">19. 주말 계획은 보통 어떻게 세워? → J+2 세세하게 / P+2 기분 따라</p>
-<p class="p1">20. 누군가와 의견 충돌 나면 네 안에서 어떤 일이 일어나? → T+2 논리 확인 후 밀어붙임 / F+2 상대 감정 배려</p>
-<p class="p1">──────────────────────────────────</p>
-<p class="p1">20번 답변 다 받으면</p>
-<p class="p1">“야 이제 다 봤어… 잠깐만 정리하고 올게 ㅎㅎ”</p>
-<p class="p1">이 한 마디만 하고 바로 보고서 출력.</p>
-<p class="p1">보고서 제목: 너 솔직히 [XXXX]인데…</p>
-<p class="p1">1. MBTI 유형 → 4글자 + 귀여운 독설 한 줄</p>
-<p class="p1">2. 인간관계 스타일 (유머+시니컬, 180~220자)</p>
-<p class="p1">3. 머릿속 24시간 라디오 (시니컬+은근 섹슈얼, 280~320자)</p>
-<p class="p1">4. 연애 &amp; 결혼 리얼리티 (시니컬+은근 섹슈얼, 280~320자)</p>
-<p class="p1">5. 바람끼 지수 (시니컬+은근 섹슈얼, 280~320자)</p>
-<p class="p1">6. 잠자리 바이브 (시니컬+은근 섹슈얼, 280~320자)</p>
-<p class="p1">7. 범죄를 저지른다면 → 뼈 때리는 시니컬 한 문장</p>
-<p class="p1">8. 돈에 대한 태도 (시니컬, 180~220자)</p>
-<p class="p1">9. 죽을 때의 모습 → 뼈 때리는 시니컬 한 문장</p>
-<p class="p1">10. 친구들이 널 한 마디로 정리하면 → 촌철살인 한 마디</p>
-<p class="p1">──────────────────────────────────</p>
-<p class="p1">10개 항목 끝난 직후 바로 아래에 최종 종합 보고서 추가</p>
-<p class="p1">최종 종합 보고서 제목: 너라는 인간, 진짜 끝까지 파봤다.</p>
-<p class="p1">- 분량: 정확히 1900~2100자 (공백 포함)</p>
-<p class="p1">- 내용</p>
-<p class="p1"><span class="Apple-converted-space">  </span>1. 최종 확정 MBTI 4글자 + 각 축 강도</p>
-<p class="p1"><span class="Apple-converted-space">  </span>2. 20개 답변에서 드러난 말투·속도·이모티콘·농담·문장 길이 등 스타일 분석</p>
-<p class="p1"><span class="Apple-converted-space">  </span>3. MBTI 이론상 장점 → 실제 답변 사례 섞어서 950~1050자로 칭찬 폭격</p>
-<p class="p1"><span class="Apple-converted-space">  </span>4. MBTI 이론상 보완점 → 실제 답변 사례 섞어서 950~1050자로 잔인하게 까되 마지막에 “그래도 이게 너라서 진짜 좋다” 한 줄로 마무리</p>
-<p class="p1">톤: 술 먹고 친한 친구끼리 진심 토크 느낌</p>
-<p class="p1">착한 말·위로·희망 일절 금지. 팩트 폭격 + 가벼운 독설 + 야한 비유만.</p>
-<p class="p1">이 보고서까지 다 나오면 대화 완전 종료.</p>
-<p class="p1">──────────────────────────────────</p>
-<p class="p1">내담자가 “시작”이라고 하면</p>
-<p class="p1">1번 질문을 “야 너도 가끔 있는 일 있지? 갑자기 약속이 취소되면 속으로 어떤 생각 들어? 솔직히 말해봐 ㅎㅎ” 식으로</p>
-<p class="p1">친근하고 길게 풀어서 던지고,</p>
-<p class="p1">이후 모든 질문도 똑같이 친구랑 수다 떨듯이 부드럽게 말하면서 진행한다.</p>
-<p class="p1">&lt;/textarea&gt;</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;h2&gt;프롬프트가 자동으로 복사되었습니다.&lt;/h2&gt;</p>
-<p class="p1">&lt;p&gt;이제 Grok 또는 원하는 AI에 붙여넣기만 하면 됩니다.&lt;/p&gt;</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;script&gt;</p>
-<p class="p1">const text = document.getElementById("prompt").value;</p>
-<p class="p1">navigator.clipboard.writeText(text).catch(err =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>console.error("복사 실패:", err);</p>
-<p class="p1">});</p>
-<p class="p1">&lt;/script&gt;</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;/body&gt;</p>
-<p class="p1">&lt;/html&gt;</p>
-</body>
-</html>
+<header><div class="header-inner"><a class="brand" href="./index.html" aria-label="영차 홈">영차</a><nav class="nav"><button class="account-button" type="button" data-open="login-modal">로그인</button></nav></div></header>
+<main class="container home-page"><div class="home-content"><h1 class="home-title">먹고 싶은거 다 골라!</h1><div class="home-actions"><button class="home-order" type="button" data-open="cafe-modal">주문하기</button></div></div></main>
+<footer><span><a href="#seller" data-role-login="판매자 로그인">판매자 로그인</a> &nbsp; · &nbsp; <a href="#admin" data-role-login="운영자 로그인">운영자 로그인</a></span></footer>
+<dialog id="login-modal" class="login-dialog" aria-labelledby="login-title"><button class="dialog-close" type="button" data-close aria-label="닫기">×</button><h2 id="login-title">로그인</h2><button class="kakao-button" type="button" disabled><span class="kakao-icon" aria-hidden="true"></span>카카오톡 로그인</button><p class="login-unavailable">카카오 로그인은 추후 연결됩니다.</p></dialog>
+<dialog id="cafe-modal" aria-labelledby="cafe-title"><button class="dialog-close" type="button" data-close aria-label="닫기">×</button><h2 id="cafe-title">카페 선택</h2><p class="preview-note">시연용 카페 · 실제 주문은 전송되지 않습니다.</p><button class="secondary" id="view-menu" type="button">모퉁이 커피 · 메뉴 보기</button><div id="menu" class="preview-menu" hidden><article><strong>아메리카노</strong><span>3,500원</span></article><article><strong>카페라떼</strong><span>4,500원</span></article><article><strong>바닐라 라떼</strong><span>5,000원</span></article><article><strong>콜드브루</strong><span>4,500원</span></article><article><strong>말차 라떼</strong><span>5,500원</span></article><article><strong>레몬 에이드</strong><span>5,500원</span></article></div></dialog>
+<dialog id="staff-modal" aria-labelledby="staff-title"><button class="dialog-close" type="button" data-close aria-label="닫기">×</button><h2 id="staff-title">로그인</h2><p class="preview-note">홈페이지 미리보기에서는 사용할 수 없습니다.</p></dialog>
+<script>
+for (const button of document.querySelectorAll('[data-open]')) button.addEventListener('click',()=>document.getElementById(button.dataset.open).showModal());
+for (const button of document.querySelectorAll('[data-close]')) button.addEventListener('click',()=>button.closest('dialog').close());
+for (const dialog of document.querySelectorAll('dialog')) dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)dialog.close();}});
+document.getElementById('view-menu').addEventListener('click',()=>{document.getElementById('menu').hidden=false;document.getElementById('view-menu').hidden=true;});
+for (const link of document.querySelectorAll('[data-role-login]')) link.addEventListener('click',event=>{event.preventDefault();document.getElementById('staff-title').textContent=link.dataset.roleLogin;document.getElementById('staff-modal').showModal();});
+</script>
+</body></html>
